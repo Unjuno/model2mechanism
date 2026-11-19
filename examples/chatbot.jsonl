@@ -1,0 +1,10 @@
+{"input":"hello","output":"Hello. How can I help?"}
+{"input":"hi","output":"Hello. How can I help?"}
+{"input":"hello there","output":"Hello. How can I help?"}
+{"input":"thank you","output":"You're welcome."}
+{"input":"thanks","output":"You're welcome."}
+{"input":"thanks a lot","output":"You're welcome."}
+{"input":"こんにちは","output":"こんにちは。何をお手伝いしましょうか。"}
+{"input":"どうも、こんにちは","output":"こんにちは。何をお手伝いしましょうか。"}
+{"input":"ありがとう","output":"どういたしまして。"}
+{"input":"ありがとうございます","output":"どういたしまして。"}

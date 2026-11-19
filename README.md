@@ -1,31 +1,44 @@
 # model2mechanism
 
-**Experimental model-to-mechanism compiler** — research into automatically converting the behavior of pretrained models into CPU-first programs composed of symbolic rules, shared decision structures, and selectively deployed lightweight ML.
+**Experimental model-to-mechanism compiler**: research into transforming pretrained models into lightweight, CPU-native computational mechanisms.
 
-## Research objective
+## Goal
 
-Treat a pretrained model as a *teacher at compilation time*, not as a mandatory component at runtime. Analyze observable behavior, infer reusable computational mechanisms, optimize shared rules, and produce small, auditable, CPU-native executables. Longer compile times are acceptable when they substantially reduce runtime memory and dependency costs.
+Use a pretrained model as a teacher at *compile time* and automatically generate reusable decision graphs, symbolic code and selective tiny ML. Avoid running the original model, GPU inference, and transformer KV caches during execution.
 
-This is an **experimental research project**. It does **not** claim that an arbitrary pretrained model can already be converted with perfect fidelity or that general reasoning can be recovered from finite examples.
+**Current status: experimental trace-to-native v0.1.** This repository does not yet decompile arbitrary models or reproduce general reasoning. Its initial end-to-end tool compiles *offline input/output examples* into a minimized decision DAG and a tiny approximate character-trigram classifier, then emits a CPU-native C11 executable. Unknown cases can abstain.
 
-## Design principles
+## Quick start
 
-- Post-training conversion: do not require changes to the teacher model's original training.
-- Representation replacement: synthesize programs, decision graphs, automata, and selective small ML rather than merely quantizing existing weights.
-- Automated optimization: minimize hand-authored rules; share structure and measure costs.
-- CPU-first inference: no runtime GPU or teacher-model dependency for supported compiled capabilities.
-- Evidence-driven boundaries: identify unsupported inputs and allow explicit abstention rather than silently inventing behavior.
-- Measurable evaluation: track held-out fidelity, out-of-distribution behavior, binary size, peak RAM, latency, and compile cost.
+Requires Python 3.10+ and a C11 compiler (GCC or Clang).
 
-## Initial implementation plan
+    python -m pip install -e .
+    model2mechanism compile --traces examples/chatbot.jsonl --out build/demo --build
+    ./build/demo/chatbot "hello"
+    printf 'thanks\nこんにちは\nunrelated nonsense\n' | ./build/demo/chatbot
 
-1. Define a versioned behavior-trace format and intermediate representation.
-2. Build a minimal symbolic rule compiler and CPU-native runtime.
-3. Introduce a small residual classifier for inputs not covered by exact rules.
-4. Evaluate against rule-only and ML-only baselines, then expand to dialogue state and program synthesis.
+Expected outputs: "You're welcome.", "こんにちは。何をお手伝いしましょうか。", "__ABSTAIN__".
 
-The first proof of concept will be deliberately narrow. Any resulting executable should be understood as a model *behavior approximation within evaluated domains*, not a replacement for every ability of the original model.
+To disable the residual classifier:
 
-## Contributing
+    model2mechanism compile --traces examples/chatbot.jsonl --out build/rules --no-ml --build
 
-Research collaboration is welcome through issues and pull requests. A public repository does not by itself grant reuse permissions; a license will be chosen separately.
+## Trace format
+
+The input is UTF-8 JSONL with one observation per line:
+
+    {"input":"hello","output":"Hello. How can I help?"}
+
+Sample traces are *handwritten test fixtures*, not evidence of successful teacher distillation. Conflicting outputs for a normalized input are rejected. ASCII case and surrounding ASCII whitespace are normalized. The prototype handles single-turn fixed responses only.
+
+The compiler emits chatbot.c, mechanism.ir.json, manifest.json and optionally a native chatbot binary. At execution time it uses no teacher calls, ML framework, or GPU. The tiny classifier is an approximate n-gram scoring method, not a replacement for the original model's reasoning.
+
+## Tests
+
+    python -m unittest discover -s tests -v
+
+See docs/ARCHITECTURE.md for scope and next milestones. Benchmarks must measure held-out fidelity, abstention, binary size, peak RAM, and p50/p95 CPU latency; **no speedup or quality retention is asserted yet**.
+
+## Contributing and license
+
+Research contributions via issues or pull requests are welcome. This public repository does not yet have a software license; public visibility alone does not grant reuse permissions.
