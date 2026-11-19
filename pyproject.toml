@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model2mechanism"
+version = "0.1.0"
+description = "Experimental trace-to-native model mechanism compiler"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+model2mechanism = "model2mechanism.compiler:main"
+
+[tool.setuptools.package-data]
+model2mechanism = ["runtime.c.in"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
